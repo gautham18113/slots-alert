@@ -1,7 +1,9 @@
 const scheduler = require('./src/scheduler');
 const DataProvider = require('./src/data-provider')
 const sendEmail = require('./src/email-util');
+const express = require('express');
 
+const app = express();
 
 require('dotenv').config();
 
@@ -80,3 +82,6 @@ const task = () => {
 
 scheduler(taskIntervalValue, taskIntervalUnit, task);
 
+app.listen(3000,function(){
+    console.log("Express Started on Port 3000");
+});
