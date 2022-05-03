@@ -82,6 +82,6 @@ const task = () => {
 
 scheduler(taskIntervalValue, taskIntervalUnit, task);
 
-app.listen(3000,function(){
+app.listen(process.env.PORT || 5000,function(){
     console.log("Express Started on Port 3000");
 });
