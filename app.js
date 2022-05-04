@@ -52,7 +52,7 @@ const counter = new Counter();
 
 const task = () => {
 
-    console.log(`Fetching data for key ${counter.count}`);
+    console.log(`Fetching data for key ${contextProvider.currentContext.accessKey}`);
 
     if(counter.count === sessionRefreshCount) {
         counter.reset();
@@ -76,6 +76,7 @@ const task = () => {
                 else{
                     if(process.env.NODE_VERBOSE==="true") console.log(result);
                     console.log("Error occurred.")
+                    if(result.responseStatus === null) counter.increment();
                 }
             }
         )

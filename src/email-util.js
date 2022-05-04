@@ -23,7 +23,10 @@ const sendEmail = (receiver, body) => {
 
     transporter.sendMail(mailConfig, (error, info) => {
         if(error) console.log(error);
-        else console.log(info);
+        else {
+            if(process.env.NODE_VERBOSE==="true")console.log(info);
+            console.log("Email Sent");
+        }
     })
 }
 
