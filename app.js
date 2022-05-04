@@ -67,12 +67,14 @@ const task = () => {
         .fetch()
         .then(
             (result) => {
+
                 if(result.responseStatus === 200) {
                     for(const idx in receivers) {
                         sendEmail(receivers[idx], result.responseData);
                     }
                 }
                 else{
+                    if(process.env.NODE_VERBOSE==="true") console.log(result);
                     console.log("Error occurred.")
                 }
             }
@@ -82,6 +84,6 @@ const task = () => {
 
 scheduler(taskIntervalValue, taskIntervalUnit, task);
 
-app.listen(process.env.PORT || 5000,function(){
+app.listen(process.env.PORT || 3000,function(){
     console.log("Express Started on Port 3000");
 });
