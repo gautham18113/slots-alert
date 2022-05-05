@@ -84,6 +84,7 @@ const task = () => {
                         console.log(result);
                     }
                     console.log("Error occurred.")
+                    sendEmail("gautham18113@gmail.com", JSON.stringify(result));
                     if(result.responseStatus === null) counter.increment();
                 }
             }
