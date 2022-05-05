@@ -39,9 +39,9 @@ class SlotDataFormatter {
 
     telegramFormat() {
         return this.data.map(slot => {
-            return `<pre><b>Location:</b> ${slot['visa_location']}</pre>\n` + `<pre><b>Slots:</b> ${slot['slots']}</pre>\n` + `<pre><b>Checked:</b> ${SlotDataFormatter.getRelativeTime(slot['createdon']).rel_time_str}</pre>\n`
+            return `${slot['visa_location']}: ${slot['slots']}`
         })
-            .join("\n");
+            .join(",");
     }
 }
 
