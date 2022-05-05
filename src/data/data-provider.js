@@ -1,7 +1,6 @@
 const axios = require("axios");
 
 
-
 class DataProvider {
     constructor(context) {
         this.headers = {
@@ -18,25 +17,22 @@ class DataProvider {
 
     }
 
-    async fetch(){
+    async fetch() {
         return await axios.get(this.uri, {headers: this.headers})
             .then((response) => {
                 const data = response.data.slotDetails;
 
                 let totalSlots = 0;
-                for(const idx in data) {
+                for (const idx in data) {
                     totalSlots += data[idx]['slots'];
                 }
                 return {
-                    responseStatus: response.status,
-                    responseData: data,
-                    totalSlots: totalSlots
+                    responseStatus: response.status, responseData: data, totalSlots: totalSlots
                 };
             })
             .catch((error) => {
                 return {
-                    responseStatus: error.status,
-                    responseData: error
+                    responseStatus: error.status, responseData: error
                 }
             })
     }

@@ -1,63 +1,30 @@
 const scheduler = require('./src/scheduler');
-const DataProvider = require('./src/data-provider')
-const SlotDataFormatter = require('./src/slot-data-formatter')
-const sendEmail = require('./src/email-util');
-const sendTelegramMessage = require('./src/telegram-util')
+const DataProvider = require('./src/data/data-provider')
+const SlotDataFormatter = require('./src/data/slot-data-formatter')
+const sendEmail = require('./src/util/email-util');
+const sendTelegramMessage = require('./src/util/telegram-util')
+const ContextProvider = require('./src/context/context-proivder')
+const Counter = require('./src/counter/counter')
 const express = require('express');
-
-const app = express();
-
-require('dotenv').config();
-
 const config = require('envrc')({NODE_ENV: process.env.NODE_ENV});
+
+
+const emailReceivers = config('receivers');
 const sessionRefreshCount = config('refreshCount');
 const taskIntervalValue = config('taskIntervalValue');
 const taskIntervalUnit = config('taskIntervalUnit');
-const emailReceivers = config('receivers');
 const messageReceivers = config('broadcastChannels');
 
-class Counter {
-
-    constructor() {
-        this.count = 0;
-    }
-    increment() {
-        this.count++;
-    }
-    reset() {
-        this.count=0;
-    }
-}
-
-class ContextProvider {
-    constructor(contextList) {
-        this.contextList = contextList;
-        this.currentIdx = 0;
-        this.currentContext = this.contextList[this.currentIdx];
-    }
-
-    next() {
-
-        // Reset if at the end of list
-        if(this.currentIdx >= this.contextList.size) this.currentIdx = 0;
-
-        this.currentContext = this.contextList[this.currentIdx];
-
-        this.currentIdx++;
-
-    }
-
-}
+require('dotenv').config();
 
 const contextProvider = new ContextProvider(JSON.parse(process.env.ACCESS_TOKENS));
-
 const counter = new Counter();
 
 const task = () => {
 
     console.log(`Fetching data for key ${contextProvider.currentContext.accessKey}`);
 
-    if(counter.count === sessionRefreshCount) {
+    if (counter.count === sessionRefreshCount) {
         counter.reset();
         contextProvider.next();
     }
@@ -68,32 +35,34 @@ const task = () => {
 
     dataProvider
         .fetch()
-        .then(
-            (result) => {
+        .then((result) => {
 
-                if(result.responseStatus === 200) {
-                    const dataFormatter = new SlotDataFormatter(result.responseData);
-                    messageReceivers.map((receiver) => sendTelegramMessage(receiver, dataFormatter.telegramFormat()));
-                    if(result.totalSlots > 0) {
-                        emailReceivers.map((receiver) => sendEmail(receiver, dataFormatter.emailFormat()));
-                    }
+            if (result.responseStatus === 200) {
+                const dataFormatter = new SlotDataFormatter(result.responseData);
+                messageReceivers.map((receiver) => sendTelegramMessage(receiver, dataFormatter.telegramFormat()));
+                if (result.totalSlots > 0) {
+                    emailReceivers.map((receiver) => sendEmail(receiver, dataFormatter.emailFormat()));
                 }
-                else{
-                    if(process.env.NODE_VERBOSE) {
-                        console.log(process.env.NODE_VERBOSE);
-                        console.log(result);
-                    }
-                    console.log("Error occurred.")
-                    sendEmail("gautham18113@gmail.com", JSON.stringify(result));
-                    if(result.responseStatus === null) counter.increment();
+            } else {
+                if (process.env.NODE_VERBOSE) {
+                    console.log(result);
                 }
+                console.log("Error occurred.")
+                sendEmail("gautham18113@gmail.com", JSON.stringify(result));
+                if (result.responseStatus === null) counter.increment();
             }
-        )
+        })
 }
 
 
 scheduler(taskIntervalValue, taskIntervalUnit, task);
 
-app.listen(process.env.PORT || 3000,function(){
+const app = express();
+
+app.get("/", (req, res) => {
+    res.send("OK")
+});
+
+app.listen(process.env.PORT || 3000, function () {
     console.log("Express Started on Port 3000");
 });
