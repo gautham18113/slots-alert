@@ -1,24 +1,6 @@
 const axios = require("axios");
 
-const units = {
-    year  : 24 * 60 * 60 * 1000 * 365,
-    month : 24 * 60 * 60 * 1000 * 365/12,
-    day   : 24 * 60 * 60 * 1000,
-    hour  : 60 * 60 * 1000,
-    minute: 60 * 1000,
-    second: 1000
-}, rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'});
 
-let getRelativeTime = (d1, d2 = new Date()) => {return getRelativeUnits(new Date(d1) - d2);}
-
-function getRelativeUnits(elapsed) {
-    for (let u in units)
-        if (Math.abs(elapsed) > units[u] || u === 'second')
-            return {
-                "rel_time_str": rtf.format(Math.round(elapsed/units[u]), u),
-                "rel_secs": parseInt(elapsed/1000) * -1
-        }
-}
 
 class DataProvider {
     constructor(context) {
@@ -40,25 +22,21 @@ class DataProvider {
         return await axios.get(this.uri, {headers: this.headers})
             .then((response) => {
                 const data = response.data.slotDetails;
-                const result = data
-                    .map((slot) => `
-                            <div>
-                                <b>Visa Location: </b>${slot['visa_location']}<br/>
-                                <b>Slots: </b>${slot['slots']}<br/>
-                                <b>Checked: </b>${getRelativeTime(slot['createdon']).rel_time_str}<br/>
-                            </div>
-                            <br/>
-                        `)
-                    .join(" ");
+
+                let totalSlots = 0;
+                for(const idx in data) {
+                    totalSlots += data[idx]['slots'];
+                }
                 return {
                     responseStatus: response.status,
-                    responseData: result
+                    responseData: data,
+                    totalSlots: totalSlots
                 };
             })
             .catch((error) => {
                 return {
                     responseStatus: error.status,
-                    responseData: ""
+                    responseData: error
                 }
             })
     }

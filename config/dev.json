@@ -2,5 +2,6 @@
   "refreshCount": 1,
   "taskIntervalUnit": "minute",
   "taskIntervalValue": "1",
-  "receivers": ["gautham18113@gmail.com"]
+  "receivers": ["gautham18113@gmail.com"],
+  "broadcastChannels": ["-1001637335673"]
 }

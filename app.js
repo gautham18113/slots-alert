@@ -1,6 +1,8 @@
 const scheduler = require('./src/scheduler');
 const DataProvider = require('./src/data-provider')
+const SlotDataFormatter = require('./src/slot-data-formatter')
 const sendEmail = require('./src/email-util');
+const sendTelegramMessage = require('./src/telegram-util')
 const express = require('express');
 
 const app = express();
@@ -11,7 +13,8 @@ const config = require('envrc')({NODE_ENV: process.env.NODE_ENV});
 const sessionRefreshCount = config('refreshCount');
 const taskIntervalValue = config('taskIntervalValue');
 const taskIntervalUnit = config('taskIntervalUnit');
-const receivers = config('receivers');
+const emailReceivers = config('receivers');
+const messageReceivers = config('broadcastChannels');
 
 class Counter {
 
@@ -69,12 +72,17 @@ const task = () => {
             (result) => {
 
                 if(result.responseStatus === 200) {
-                    for(const idx in receivers) {
-                        sendEmail(receivers[idx], result.responseData);
+                    const dataFormatter = new SlotDataFormatter(result.responseData);
+                    if(result.totalSlots > 0) {
+                        emailReceivers.map((receiver) => sendEmail(receiver, dataFormatter.emailFormat()));
+                        messageReceivers.map((receiver) => sendTelegramMessage(receiver, dataFormatter.telegramFormat()));
                     }
                 }
                 else{
-                    if(process.env.NODE_VERBOSE==="true") console.log(result);
+                    if(process.env.NODE_VERBOSE) {
+                        console.log(process.env.NODE_VERBOSE);
+                        console.log(result);
+                    }
                     console.log("Error occurred.")
                     if(result.responseStatus === null) counter.increment();
                 }

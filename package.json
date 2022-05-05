@@ -12,6 +12,7 @@
     "envrc": "^0.4.1",
     "express": "^4.18.1",
     "node-cron": "^3.0.0",
-    "nodemailer": "^6.7.4"
+    "nodemailer": "^6.7.4",
+    "telegraf": "^4.8.1"
   }
 }
