@@ -44,12 +44,18 @@ const task = () => {
                     emailReceivers.map((receiver) => sendEmail(receiver, dataFormatter.emailFormat()));
                 }
             } else {
+                if (result.responseStatus === null) {
+                    sendTelegramMessage(
+                        "-1001637335673",
+                        "Request failed for access key: "
+                        + contextProvider.currentContext.accessKey
+                        + ". Switching key.")
+                    counter.reset();
+                    contextProvider.next();
+                }
                 if (process.env.NODE_VERBOSE) {
                     console.log(result);
                 }
-                console.log("Error occurred.")
-                sendEmail("gautham18113@gmail.com", JSON.stringify(result));
-                if (result.responseStatus === null) counter.increment();
             }
         })
 }
