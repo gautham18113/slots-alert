@@ -73,9 +73,9 @@ const task = () => {
 
                 if(result.responseStatus === 200) {
                     const dataFormatter = new SlotDataFormatter(result.responseData);
+                    messageReceivers.map((receiver) => sendTelegramMessage(receiver, dataFormatter.telegramFormat()));
                     if(result.totalSlots > 0) {
                         emailReceivers.map((receiver) => sendEmail(receiver, dataFormatter.emailFormat()));
-                        messageReceivers.map((receiver) => sendTelegramMessage(receiver, dataFormatter.telegramFormat()));
                     }
                 }
                 else{
