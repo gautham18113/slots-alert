@@ -1,8 +1,7 @@
-const Store = require('../data/store/s3-store');
 class ContextProvider {
-    constructor(contextList) {
+    constructor(contextList, dataStore) {
         this.contextList = contextList;
-        this.store = new Store('slots-alert', 'appConfig.json');
+        this.store = dataStore;
         this.toSerialize = {
             counter: 0,
             contextIdx: 0
