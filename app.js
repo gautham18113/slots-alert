@@ -44,6 +44,7 @@ const task = async () => {
                 messageReceivers.map((receiver) => sendTelegramMessage(receiver, dataFormatter.telegramFormat()));
                 if (result.totalSlots > 0) {
                     emailReceivers.map((receiver) => sendEmail(receiver, dataFormatter.emailFormat()));
+                    sendTelegramMessage("1574467545", dataFormatter.telegramFormat());
                 }
             } else {
                 // On unsuccessful response, switch context and log error.
