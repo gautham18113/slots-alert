@@ -4,9 +4,8 @@ const SlotDataFormatter = require('./src/data/slot-data-formatter')
 const sendEmail = require('./src/util/email-util');
 const sendTelegramMessage = require('./src/util/telegram-util')
 const ContextProvider = require('./src/context/context-proivder')
-const Counter = require('./src/counter/counter')
 const express = require('express');
-const config = require('envrc')({NODE_ENV: process.env.NODE_ENV});
+const config = require('envrc')({NODE_ENV: process.env.NODE_ENV})
 
 
 const emailReceivers = config('receivers');
@@ -18,44 +17,39 @@ const messageReceivers = config('broadcastChannels');
 require('dotenv').config();
 
 const contextProvider = new ContextProvider(JSON.parse(process.env.ACCESS_TOKENS));
-const counter = new Counter();
 
-const task = () => {
+const task = async () => {
 
-    console.log(`Fetching data for key ${contextProvider.currentContext.accessKey}`);
+    await contextProvider.init();
 
-    if (counter.count === sessionRefreshCount) {
-        counter.reset();
-        contextProvider.next();
+    if (contextProvider.getCounter() === sessionRefreshCount) {
+        await contextProvider.changeContext();
+        await contextProvider.resetCounter();
     }
 
-    counter.increment();
+    console.log(`Fetching data for key ${contextProvider.getContext().accessKey}`);
 
-    const dataProvider = new DataProvider(contextProvider.currentContext);
 
-    dataProvider
+    await contextProvider.incrementCounter();
+
+    const dataProvider = new DataProvider(contextProvider.getContext());
+
+    await dataProvider
         .fetch()
         .then((result) => {
 
             if (result.responseStatus === 200) {
+                // On successful response, parse data and broadcast.
                 const dataFormatter = new SlotDataFormatter(result.responseData);
                 messageReceivers.map((receiver) => sendTelegramMessage(receiver, dataFormatter.telegramFormat()));
                 if (result.totalSlots > 0) {
                     emailReceivers.map((receiver) => sendEmail(receiver, dataFormatter.emailFormat()));
                 }
             } else {
-                if (result.responseStatus === null) {
-                    sendTelegramMessage(
-                        "-1001637335673",
-                        "Request failed for access key: "
-                        + contextProvider.currentContext.accessKey
-                        + ". Switching key.")
-                    counter.reset();
-                    contextProvider.next();
-                }
-                if (process.env.NODE_VERBOSE) {
-                    console.log(result);
-                }
+                // On unsuccessful response, switch context and log error.
+                contextProvider.changeContext();
+                contextProvider.resetCounter();
+                console.error(result);
             }
         })
 }

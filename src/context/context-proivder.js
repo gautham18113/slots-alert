@@ -1,19 +1,65 @@
+const Store = require('../data/store/s3-store');
 class ContextProvider {
     constructor(contextList) {
         this.contextList = contextList;
-        this.currentIdx = 0;
-        this.currentContext = this.contextList[this.currentIdx];
+        this.store = new Store('slots-alert', 'appConfig.json');
+        this.toSerialize = {
+            counter: 0,
+            contextIdx: 0
+        }
     }
 
-    next() {
+    getContext() {
+        return this.contextList[this.toSerialize.contextIdx];
+    }
 
-        // Reset if at the end of list
-        if(this.currentIdx >= this.contextList.size) this.currentIdx = 0;
+    getCounter() {
+        return this.toSerialize.counter;
+    }
 
-        this.currentContext = this.contextList[this.currentIdx];
+    async resetAll() {
+        this.toSerialize = {
+            contextIdx: 0,
+            counter: 0
+        }
+        await this.updateContext();
+    }
 
-        this.currentIdx++;
+    async incrementCounter() {
+        this.toSerialize.counter++;
+        await this.updateContext();
+    }
 
+    async resetCounter() {
+        this.toSerialize.counter = 0;
+        await this.updateContext();
+    }
+
+    async changeContext() {
+        this.toSerialize.contextIdx++;
+       if(this.toSerialize.contextIdx >= this.contextList.length){
+           this.toSerialize.contextIdx = 0;
+       }
+       await this.updateContext();
+    }
+
+    async init() {
+        await this.store.read()
+            .then((res) => {
+                const obj = JSON.parse(res);
+                this.toSerialize = {
+                    counter: obj.counter || 0,
+                    contextIdx: obj.contextIdx || 0
+                }
+            })
+            .catch((err) => console.error(err));
+    }
+
+    async updateContext() {
+        await this.store.write(JSON.stringify(this.toSerialize))
+            .catch((error) => {
+                console.error(error);
+            })
     }
 
 }
