@@ -1,7 +1,7 @@
 {
   "refreshCount": 15,
   "taskIntervalUnit": "minute",
-  "taskIntervalValue": "15 ",
+  "taskIntervalValue": "10",
   "receivers": [
     "gautham18113@gmail.com",
     "prsudhar91@gmail.com",
