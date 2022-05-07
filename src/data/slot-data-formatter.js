@@ -38,10 +38,14 @@ class SlotDataFormatter {
     }
 
     telegramFormat() {
-        return this.data.map(slot => {
-            return `${slot['visa_location']}: ${slot['slots']}`
-        })
-            .join(",");
+        let totalSlots = 0;
+        for (const idx in this.data) {
+            totalSlots += this.data[idx]['slots'];
+        }
+
+        return `Total Slots: ${totalSlots}${totalSlots > 0 ? '\n\n' + this.data.filter((item) => item['slots'] > 0)
+            .map((item)=> item['visa_location'] + ': ' + item['slots']).join('\n') : ''}`
+
     }
 }
 
